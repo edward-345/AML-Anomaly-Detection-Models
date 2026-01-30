@@ -77,13 +77,16 @@ pca = PCA()
 ind_pca = pca.fit_transform(ind_cont_scaled)
 '''
 
+# ---------------------------------------------------------------------------
+# LOF MODEL FITTING  --------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 
 # %%
 from sklearn.neighbors import LocalOutlierFactor
-
+# %%
 ind_lof = LocalOutlierFactor(
-    n_neighbors = 215,
+    n_neighbors = 350,
     contamination = "auto" 
 )
 
@@ -99,8 +102,47 @@ scores.describe()
 
 # %%
 #Top anomalies
-anomalies = scores.nsmallest(50)
+anomalies = scores.nsmallest(1000)
 ind.loc[scores.index, 'lof_score'] = scores
 
 top_anomalies = ind.loc[anomalies.index]
+# %%
+top_anomalies.to_csv("check_anomalies.csv")
+
+
+
+# ---------------------------------------------------------------------------
+# LOF FITTING ON PCA OUTPUT -------------------------------------------------
+# doesnt rly work yet...
+# ---------------------------------------------------------------------------
+
+# %%
+# choosing number of components
+ind_pca_raw = PCA(n_components=0.90) 
+ind_pca = ind_pca_raw.fit_transform(ind_LOF_data)
+
+ # %%
+# 2. Convert back to DataFrame to keep your Index safe
+pc_cols = [f'PC{i+1}' for i in range(ind_pca.shape[1])]
+ind_pca_df = pd.DataFrame(ind_pca, columns=pc_cols, index=ind_LOF_data.index)
+
+# %%
+# 3. Fit LOF on the PCA components
+# We use the PCA coordinates here
+pca_labels = ind_lof.fit_predict(ind_pca_df)
+pca_scores = ind_lof.negative_outlier_factor_
+
+# %%
+# 4. Join back to your original 'ind' dataframe
+ind_pca_results = ind.copy()
+
+# Map the scores back using the index from the PCA dataframe
+ind_pca_results['lof_score_pca'] = pd.Series(pca_scores, index=ind_pca_df.index)
+
+# 5. Filter for the top 1000 anomalies specifically from this PCA run
+# Since ind_pca_results contains all rows (including those skipped), 
+# we sort by the new score column.
+top_pca_anomalies = ind_pca_results.nsmallest(1000, 'lof_score_pca')
+
+top_pca_anomalies.to_csv("anomaly_report_pca.csv", index=True)
 # %%
