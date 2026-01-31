@@ -118,7 +118,7 @@ top_anomalies.to_csv("check_anomalies.csv")
 
 # %%
 # choosing number of components
-ind_pca_raw = PCA(n_components=0.90) 
+ind_pca_raw = PCA(n_components=2) 
 ind_pca = ind_pca_raw.fit_transform(ind_LOF_data)
 
  # %%
