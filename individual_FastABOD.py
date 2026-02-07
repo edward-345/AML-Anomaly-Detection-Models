@@ -73,6 +73,83 @@ good_var_cols = ind_cont_scaled.columns[std_after > 0.2]
 
 # %%
 # Dropping columns with low variance
-ind_LOF_data = ind_cont_scaled[good_var_cols]
+ind_ABOD_data = ind_cont_scaled[good_var_cols]
 
+# %% Removing credit 
+drop = ind_ABOD_data.filter(regex='credit_transactions$').columns
+
+ind_ABOD_subset = ind_ABOD_data.drop(columns=drop)
+
+ind_ABOD_subset = ind_ABOD_subset.drop(columns=['emt_debit_sum',
+                                                'emt_credit_sum',
+                                                'west_debit_transactions',
+                                                'abm_debit_transactions'])
+# ---------------------------------------------------------------------------
+# CHECKING FOR HIGH CORRELATION COLUMNS -------------------------------------
+# ---------------------------------------------------------------------------
+
+# %%
+corr = ind_ABOD_subset.corr(method="pearson")
+
+fig, ax = plt.subplots(figsize=(8, 6))
+cax = ax.imshow(corr, aspect="auto")
+
+ax.set_xticks(range(len(corr.columns)))
+ax.set_yticks(range(len(corr.columns)))
+ax.set_xticklabels(corr.columns, rotation=90)
+ax.set_yticklabels(corr.columns)
+
+fig.colorbar(cax)
+plt.tight_layout()
+plt.show()
+
+# %%
+high_corr = (
+    corr.abs()
+    .where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+    .stack()
+    .sort_values(ascending=False)
+)
+
+high_corr.head(20).reset_index(name="corr")
+# %%
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# %%
+plt.figure(figsize=(8, 6))
+
+
+sns.heatmap(corr, 
+            annot=False,
+            cmap='coolwarm',
+            linewidths=2,
+            linecolor='black')
+
+plt.tight_layout()
+plt.show()
+
+
+# ---------------------------------------------------------------------------
+# FITTING FastABOD MODEL ----------------------------------------------------
+# ---------------------------------------------------------------------------
+# %%
+ind_ABOD = ABOD(contamination=.0002,
+                method='fast',
+                n_neighbors=30)
+
+ind_ABOD_model = ind_ABOD.fit(ind_ABOD_subset)
+# %%
+results_df = ind_ABOD_subset.copy()
+results_df['abod_score'] = ind_ABOD_model.decision_scores_
+results_df['is_outlier'] = ind_ABOD_model.labels_
+
+final_table = ind.merge(
+    results_df[['abod_score', 'is_outlier']],
+    left_index=True,
+    right_index=True,
+    how='left'
+)
+
+final_table.to_csv("FastABOD_outliers.csv")
 # %%

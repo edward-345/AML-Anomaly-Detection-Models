@@ -86,7 +86,7 @@ ind_pca = pca.fit_transform(ind_cont_scaled)
 from sklearn.neighbors import LocalOutlierFactor
 # %%
 ind_lof = LocalOutlierFactor(
-    n_neighbors = 350,
+    n_neighbors = 150,
     contamination = "auto" 
 )
 
