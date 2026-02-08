@@ -134,7 +134,7 @@ plt.show()
 # FITTING FastABOD MODEL ----------------------------------------------------
 # ---------------------------------------------------------------------------
 # %%
-ind_ABOD = ABOD(contamination=.0002,
+ind_ABOD = ABOD(contamination='auto',
                 method='fast',
                 n_neighbors=30)
 
