@@ -1,44 +1,46 @@
+# ---------------------------------------------------------------------------
+# CLEANING AND DATA PROCESSING ----------------------------------------------
+# ---------------------------------------------------------------------------
+
 # %%
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import RobustScaler
+from sklearn.decomposition import PCA
+
+pd.options.display.float_format = '{:.2f}'.format
+# %%
+def cast_categorical(df: pd.DataFrame) -> pd.DataFrame:
+    """Converts known categorical columns into correct type"""
+    cat_cols = [
+        "customer_id",
+        "transaction_id"
+        "label",
+        "country",
+        "province",
+        "city",
+        "gender",
+        "marital_status",
+        "occupation_code",
+        "industry_code",
+        "merchant_category",
+        "ecommerce_ind",
+        "debit_credit",
+        "cash_indicator"
+    ]
+
+    cols_to_cast = df.columns.intersection(cat_cols)
+    df[cols_to_cast] = df[cols_to_cast].astype("category")
+
+    return df
 
 # %%
-wire = pd.read_csv("clean_txn_wire.csv")
+def cast_datetime(df: pd.DataFrame) -> pd.DataFrame:
+    """Converts known datetime columns into correct type"""
+    datetime_cols = [
+        "birth_date",
+        "established_date",
+        "onboard_date"
+    ]
 
-print(wire.head())
-
-# %%
-print(wire.dtypes)
-
-# %%
-wire["customer_id"] = wire["customer_id"].astype("category")
-wire["customer_id"] = wire["customer_id"].astype("category")
-wire["amount_cad"] = wire["amount_cad"].astype("float32")
-wire["debit_credit"] = wire["debit_credit"].astype("category")
-wire["transaction_datetime"] = pd.to_datetime(wire["transaction_datetime"])
-
-print(wire.dtypes)
-
-# %%
-print(wire.head())
-
-# %%
-print(wire.tail())
-# %%
-print(wire.shape)
-
-# %%
-print(wire.columns)
-# %%
-print(wire.info())
-
-# %%
-wire.describe().style.format("{:.2f}")
-
-
-# %%
-import sklearn as sk
-# %%
-from sklearn.neighbors import LocalOutlierFactor
-
-# %%
+    return df
