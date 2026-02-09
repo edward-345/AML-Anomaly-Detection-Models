@@ -126,10 +126,6 @@ print(account.dtypes)
 
 account.dtypes
 # %%
-out = cast_binary_and_categorical(account)
-print(type(out))
-
-# %%
 # Catching stragglers
 force_numeric = [
     "months_active",
@@ -141,9 +137,8 @@ force_numeric = [
 for c in force_numeric:
     account[c] = account[c].astype("float64")
 # %%
-account_index = account.set_index("customer_id")
-
-acnt_continuous = account_index.select_dtypes(include=[np.number])
+account = account.set_index("customer_id")
+acnt_continuous = account.select_dtypes(include=[np.number])
 
 acnt_continuous.shape
 acnt_continuous.dtypes
@@ -178,4 +173,37 @@ acnt_cln_scaled = pd.DataFrame(
 # FITTING LOF
 # We will try on both acnt_continuous and acnt_continuous_cleaned
 # to see what happens and to compare outputs
+#
+# We start with K = 200
 # --------------------------------------------------------------
+
+from sklearn.neighbors import LocalOutlierFactor
+# %%
+# ACNT_SCALED
+acnt_lof = LocalOutlierFactor(n_neighbors=200,
+                              contamination="auto",
+                              n_jobs=-1)
+acnt_lof_labels = acnt_lof.fit_predict(acnt_scaled)
+
+acnt_lof_scores = pd.Series(acnt_lof.negative_outlier_factor_,
+                            index=acnt_scaled.index)
+
+account.loc[acnt_lof_scores.index, "lof_score_all"] = acnt_lof_scores
+
+top_anomalies = account.loc[acnt_lof_scores.nsmallest(1000).index]
+top_anomalies.to_csv("accounts_full_LOF.csv")
+
+# %%
+# ACNT_CLN_SCALED
+acntCLN_lof = LocalOutlierFactor(n_neighbors=200,
+                                 contamination="auto",
+                                 n_jobs=-1)
+acntCLN_lof_labels = acntCLN_lof.fit_predict(acnt_cln_scaled)
+
+acntCLN_lof_scores = pd.Series(acntCLN_lof.negative_outlier_factor_,
+                               index=acnt_cln_scaled.index)
+
+account.loc[acntCLN_lof_scores.index, "lof_score_clean"] = acntCLN_lof_scores
+
+top_anomalies = account.loc[acntCLN_lof_scores.nsmallest(1000).index]
+top_anomalies.to_csv("accountsCLEAN_full_LOF.csv")
