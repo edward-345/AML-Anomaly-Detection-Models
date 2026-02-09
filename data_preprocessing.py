@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import PCA
+from pandas.api.types import is_numeric_dtype
 
 pd.options.display.float_format = '{:.2f}'.format
 
@@ -26,8 +27,33 @@ def cast_categorical(df: pd.DataFrame) -> pd.DataFrame:
         "merchant_category",
         "ecommerce_ind",
         "debit_credit",
-        "cash_indicator"
+        "cash_indicator",
+        "kyc_type",
+        "high_frequency_customer_flag",
+        "sudden_inflow_outflow_pattern",
+        "volume_eft_sudden_increase",
+        "txn_count_eft_spike",
+        "velocity_change_eft",
+        "round_amount_flag",
+        "structuring_pattern_flag",
+        "multi_channel_flag",
+        "has_wire_transfers",
+        "structured_cash_deposits_same_day",
+        "has_western_union",
+        "cross_border_flag",
+        "is_country_financial_hub",
+        "is_country_offshore_structure_jurisdiction",
+        "is_country_trade_conduit",
+        "is_country_private_banking_hub",
+        "is_country_shell_company_jurisdiction",
+        "is_country_tbml_high_risk",
+        "is_country_major_port",
+        "is_country_real_estate_ml_risk",
+        "is_country_hnwi_concentration",
+        "is_country_high_cash_usage",
+        "high_geographic_dispersion"
     ]
+
 
     cols_to_cast = df.columns.intersection(cat_cols)
     df[cols_to_cast] = df[cols_to_cast].astype("category")
@@ -88,3 +114,4 @@ def build_debit_credit_features(
         df.drop(columns=[d_txn, c_txn, d_amt, c_amt], inplace=True)
 
     return df
+

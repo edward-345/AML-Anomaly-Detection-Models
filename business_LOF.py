@@ -82,7 +82,7 @@ bsn_net_scaled_subset = bsn_net_scaled_subset.drop(zero_var_cols, axis=1)
 from sklearn.neighbors import LocalOutlierFactor
 # %%
 bsn_net_lof = LocalOutlierFactor(
-    n_neighbors = 75,
+    n_neighbors = 70,
     contamination = "auto" 
 )
 
@@ -116,4 +116,52 @@ run_info = {
 }
 
 log_run(run_info)
+# %%
+# Manual grid search for best parameter
+from itertools import product
+
+param_grid = {
+    "n_neighbors": [20, 40, 60, 90, 120, 150],
+    "contamination": ["auto"]  # keep fixed unless you have domain priors
+}
+
+# %%
+def score_separation(scores):
+    return scores.quantile(0.25) - scores.quantile(0.75)
+
+def frac_outliers(labels):
+    return (labels == -1).mean()
+# %%
+results = []
+
+for n_neighbors, contamination in product(
+    param_grid["n_neighbors"],
+    param_grid["contamination"]
+):
+    lof = LocalOutlierFactor(
+        n_neighbors=n_neighbors,
+        contamination=contamination
+    )
+
+    labels = lof.fit_predict(bsn_net_scaled_subset)
+    scores = pd.Series(
+        lof.negative_outlier_factor_,
+        index=bsn_net_scaled_subset.index
+    )
+
+    run_info = {
+        "model": "LOF",
+        "n_neighbors": n_neighbors,
+        "contamination": contamination,
+        "score_sep": score_separation(scores),
+        "frac_outliers": frac_outliers(labels),
+        "n_samples": len(scores),
+        "n_features": bsn_net_scaled_subset.shape[1],
+    }
+
+    log_run(run_info)
+    results.append(run_info)
+# %%
+df = pd.json_normalize(results)
+df.sort_values("score_sep")
 # %%
