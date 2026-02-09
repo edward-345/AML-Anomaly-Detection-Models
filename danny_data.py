@@ -1,6 +1,16 @@
 # %%
+import data_preprocessing, inspect
+
+print("Loaded file:", data_preprocessing.__file__)
+print("Has function:", hasattr(data_preprocessing, "cast_binary_and_categorical"))
+
+print("\n--- First 40 lines of loaded module ---\n")
+print("\n".join(inspect.getsource(data_preprocessing).splitlines()[:40]))
+print("\n--------------------------------------\n")
+
+# %%
 from data_preprocessing import cast_categorical
-from variable_cast import cast_binary_and_categorical
+from data_preprocessing import cast_binary_and_categorical
 
 from exp_logging import log_run
 
