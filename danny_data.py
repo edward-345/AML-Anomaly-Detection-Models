@@ -207,3 +207,26 @@ account.loc[acntCLN_lof_scores.index, "lof_score_clean"] = acntCLN_lof_scores
 
 top_anomalies = account.loc[acntCLN_lof_scores.nsmallest(1000).index]
 top_anomalies.to_csv("accountsCLEAN_full_LOF.csv")
+
+# %%
+# --------------------------------------------------------------
+# FITTING LOF ON PCA OUTPUT
+# We will try on both acnt_continuous and acnt_continuous_cleaned
+# --------------------------------------------------------------
+
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+
+pca = PCA(n_components=.95,
+          random_state = 67)
+
+# %%
+#PCA on acnt_scaled
+acnt_scl_pca = pca.fit_transform(acnt_scaled)
+
+acnt_scaled.shape[1]
+acnt_scl_pca.shape[1]
+# %%
+plt.plot(np.cumsum(pca.explained_variance_ratio_))
+plt.show()
+# %%
