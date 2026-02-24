@@ -1,2 +1,10 @@
 *.csv
 data/
+
+__pycache__/
+*.pyc
+
+mlruns.db*.sqlite
+*.zip
+.DS_Store
+.dbeaver/
